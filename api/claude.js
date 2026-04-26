@@ -4,7 +4,12 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+  if (req.method !== 'POST') {
+  const keyCheck = process.env.GEMINI_API_KEY ? 'KEY_FOUND_LENGTH_' + process.env.GEMINI_API_KEY.length : 'NO_KEY_FOUND';
+  res.status(200).json({ status: 'Method not allowed', gemini: keyCheck });
+  return;
+}
+
 
   try {
     let body = req.body;
