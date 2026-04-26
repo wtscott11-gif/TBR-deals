@@ -182,8 +182,13 @@ async function fetchAC(q){
     const r=await fetch(API,{method:'POST',signal:acAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:`Return a JSON array of up to 6 real published books matching "${q}". Each: {title,author,year}. ONLY valid JSON array, no markdown.`}],max_tokens:400})});
     const d=await r.json();
     const txt=(d.content||[]).map(c=>c.type==='text'?c.text:'').join('');
-    acResults=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    acIdx=-1;renderDrop();
+    try {
+  acResults=JSON.parse(txt.replace(/```json|```/g,'').trim());
+} catch(parseErr) {
+  acResults=[{title:'DEBUG: '+txt.substring(0,80), author:'parse error', year:''}];
+}
+acIdx=-1;renderDrop();
+
   }catch(e){if(e.name!=='AbortError')closeDrop()}
 }
 function renderDrop(){
