@@ -7,7 +7,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).end(); return; }
 
   try {
-    const { messages, max_tokens, tools } = req.body;
+    const body = req.body;
+    const { messages, max_tokens, tools } = body;
 
     const geminiMessages = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -38,23 +39,17 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload),
     });
 
+    const rawText = await response.text();
+
     if (!response.ok) {
-      const err = await response.text();
-      res.status(response.status).json({ error: err });
+      res.status(200).json({
+        content: [{ type: 'text', text: 'PROXY_ERROR: ' + response.status + ' — ' + rawText }]
+      });
       return;
     }
 
-    const data = await response.json();
+    const data = JSON.parse(rawText);
     const text = data.candidates?.[0]?.content?.parts
       ?.filter(p => p.text)
       ?.map(p => p.text)
-      ?.join('') || '';
-
-    res.status(200).json({
-      content: [{ type: 'text', text }]
-    });
-
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-}
+      ?.join('') || 'EMPTY_RESPONSE:​​​​​​​​​​​​​​​​
