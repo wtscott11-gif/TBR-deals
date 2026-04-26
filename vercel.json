@@ -2,8 +2,8 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/claude",
-      "dest": "/api/claude.js"
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
@@ -11,4 +11,3 @@
     }
   ]
 }
-
