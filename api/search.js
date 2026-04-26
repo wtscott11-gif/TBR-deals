@@ -6,12 +6,11 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
   const apiKey = process.env.GEMINI_API_KEY;
+  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 
   if (req.method === 'GET') {
     try {
-      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
-
-
+      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
       var testResp = await fetch(testUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -21,7 +20,7 @@ module.exports = async function handler(req, res) {
         })
       });
       var testRaw = await testResp.text();
-      return res.status(200).json({ raw: testRaw });
+      return res.status(200).json({ model: model, raw: testRaw });
     } catch(e) {
       return res.status(200).json({ error: e.message });
     }
@@ -46,7 +45,6 @@ module.exports = async function handler(req, res) {
     });
 
     var useSearch = tools.length > 0;
-    var model = 'gemini-2.0-flash';
     var payload = {
       contents: geminiMessages,
       generationConfig: { maxOutputTokens: max_tokens }
