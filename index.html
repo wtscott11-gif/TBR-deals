@@ -158,19 +158,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
 </div>
 <script>
-const PASS = 'yourchosenpassword';
-const stored = sessionStorage.getItem('tbr_auth');
-if (stored !== PASS) {
-  const entry = prompt('Enter password to use TBR Deals:');
-  if (entry !== PASS) {
-    document.body.innerHTML = '<p style="font-family:sans-serif;padding:2rem">Incorrect password.</p>';
-    throw new Error('Unauthorized');
-  }
-  sessionStorage.setItem('tbr_auth', entry);
-}
-const API = '/api/proxy';
-
-const MODEL='claude-sonnet-4-20250514';
+const PASS='lovecheapbooks';
+const stored=sessionStorage.getItem('tbr_auth');
+if(stored!==PASS){const entry=prompt('Enter password to use TBR Deals:');if(entry!==PASS){document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">Incorrect password.</p>';throw new Error('Unauthorized')}sessionStorage.setItem('tbr_auth',entry)}
+const API='/api/proxy';
+const MODEL='gemini';
 let books=[];try{books=JSON.parse(localStorage.getItem('tbr_books')||'[]')}catch(e){}
 let emailSaved='';try{emailSaved=localStorage.getItem('tbr_email')||''}catch(e){}
 let selBook=null,selFormats=new Set(),selEditions=new Set();
@@ -187,7 +179,7 @@ async function fetchAC(q){
   if(acAbort)acAbort.abort();acAbort=new AbortController();
   drop.innerHTML='<p class="ac-hint">Searching...</p>';drop.classList.add('open');
   try{
-    const r=await fetch(API,{method:'POST',signal:acAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:400,messages:[{role:'user',content:`Return a JSON array of up to 6 real published books matching "${q}". Each: {title,author,year}. ONLY valid JSON array, no markdown.`}]})});
+    const r=await fetch(API,{method:'POST',signal:acAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:`Return a JSON array of up to 6 real published books matching "${q}". Each: {title,author,year}. ONLY valid JSON array, no markdown.`}],max_tokens:400})});
     const d=await r.json();
     const txt=(d.content||[]).map(c=>c.type==='text'?c.text:'').join('');
     acResults=JSON.parse(txt.replace(/```json|```/g,'').trim());
@@ -207,7 +199,7 @@ async function fetchEditions(book){
   const panel=document.getElementById('edition-panel');const content=document.getElementById('edition-content');
   panel.style.display='block';content.innerHTML='<p class="ac-hint">Looking up editions...</p>';selEditions=new Set();
   try{
-    const r=await fetch(API,{method:'POST',signal:edAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:700,messages:[{role:'user',content:`List known editions and printings of "${book.title}" by ${book.author}. Include different cover art versions, special editions, anniversary editions, publisher changes, illustrated editions. Return a JSON array of up to 10 objects: {id (short slug), label, year, publisher, note (what makes it distinct, max 12 words)}. ONLY valid JSON array, no markdown.`}]})});
+    const r=await fetch(API,{method:'POST',signal:edAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:`List known editions and printings of "${book.title}" by ${book.author}. Include different cover art versions, special editions, anniversary editions, publisher changes, illustrated editions. Return a JSON array of up to 10 objects: {id,label,year,publisher,note}. ONLY valid JSON array, no markdown.`}],max_tokens:700})});
     const d=await r.json();const txt=(d.content||[]).map(c=>c.type==='text'?c.text:'').join('');
     let editions=[];try{editions=JSON.parse(txt.replace(/```json|```/g,'').trim())}catch(e){}
     renderEditions(editions);
@@ -216,7 +208,7 @@ async function fetchEditions(book){
 function renderEditions(list){
   const content=document.getElementById('edition-content');
   if(!list.length){content.innerHTML='<p class="ac-hint">No distinct editions found.</p>';return}
-  content.innerHTML=list.map(e=>`<div class="edition-item" id="ei-${esc(e.id)}" onclick="toggleEd('${esc(e.id)}','${esc(e.label)}')"><div class="edition-cb" id="cb-${esc(e.id)}"></div><div style="flex:1;min-width:0"><div class="edition-title">${esc(e.label)}${e.year?' ('+e.year+')':''}</div>${e.publisher?`<div class="edition-meta">${esc(e.publisher)}</div>`:''} ${e.note?`<div class="edition-note">${esc(e.note)}</div>`:''}</div></div>`).join('');
+  content.innerHTML=list.map(e=>`<div class="edition-item" id="ei-${esc(e.id)}" onclick="toggleEd('${esc(e.id)}')"><div class="edition-cb" id="cb-${esc(e.id)}"></div><div style="flex:1;min-width:0"><div class="edition-title">${esc(e.label)}${e.year?' ('+e.year+')':''}</div>${e.publisher?`<div class="edition-meta">${esc(e.publisher)}</div>`:''} ${e.note?`<div class="edition-note">${esc(e.note)}</div>`:''}</div></div>`).join('');
 }
 function toggleEd(id){const item=document.getElementById('ei-'+id);const cb=document.getElementById('cb-'+id);if(selEditions.has(id)){selEditions.delete(id);item.classList.remove('picked');cb.classList.remove('checked')}else{selEditions.add(id);item.classList.add('picked');cb.classList.add('checked')}}
 function addBook(){
@@ -244,7 +236,7 @@ async function checkDeals(){
   const bookList=books.map(b=>{let s=`"${b.title}"${b.author?' by '+b.author:''} (threshold: $${Number(b.threshold).toFixed(2)}`;if(b.formats&&b.formats.length)s+=`, formats: ${b.formats.join(', ')}`;if(b.editions&&b.editions.length)s+=`, preferred editions: ${b.editions.join(', ')}`;return s+')'}).join('\n');
   const prompt=`You are a book deal assistant. Search the web for current prices of these books at Amazon, Barnes & Noble, Books-A-Million, Target, and Walmart. Match requested formats and editions where possible. Return a JSON array: {bookTitle, edition, format, retailer, currentPrice (number), originalPrice (number or null), purchaseUrl, belowThreshold (boolean)}. Only include where you found a real price. ONLY valid JSON, no markdown.\n\nBooks:\n${bookList}`;
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1200,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:1200,tools:[{type:'web_search'}]})});
     const data=await r.json();const txt=(data.content||[]).map(c=>c.type==='text'?c.text:'').join('');
     let deals=[];try{deals=JSON.parse(txt.replace(/```json|```/g,'').trim())}catch(e){showBanner('Could not parse results. Try again.','warn');resetBtn();return}
     renderDeals(deals);
