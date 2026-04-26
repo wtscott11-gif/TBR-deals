@@ -161,7 +161,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 const PASS='lovecheapbooks';
 const stored=sessionStorage.getItem('tbr_auth');
 if(stored!==PASS){const entry=prompt('Enter password to use TBR Deals:');if(entry!==PASS){document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">Incorrect password.</p>';throw new Error('Unauthorized')}sessionStorage.setItem('tbr_auth',entry)}
-const API='/api/index';
+const API='/api/search';
 const MODEL='gemini';
 let books=[];try{books=JSON.parse(localStorage.getItem('tbr_books')||'[]')}catch(e){}
 let emailSaved='';try{emailSaved=localStorage.getItem('tbr_email')||''}catch(e){}
