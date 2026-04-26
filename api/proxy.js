@@ -11,10 +11,15 @@ export default async function handler(req, res) {
 
     const geminiMessages = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map(c => c.text || '').join('') }]
+      parts: [{ text: typeof m.content === 'string'
+        ? m.content
+        : Array.isArray(m.content)
+          ? m.content.map(c => c.text || '').join('')
+          : String(m.content) }]
     }));
 
-    const useSearch = tools && tools.some(t => t.type && t.type.includes('search'));
+    const useSearch = !!(tools && tools.length > 0);
+    const model = useSearch ? 'gemini-2.0-flash' : 'gemini-1.5-flash';
 
     const payload = {
       contents: geminiMessages,
@@ -22,10 +27,9 @@ export default async function handler(req, res) {
     };
 
     if (useSearch) {
-      payload.tools = [{ googleSearch: {} }];
+      payload.tools = [{ google_search: {} }];
     }
 
-    const model = useSearch ? 'gemini-2.0-flash' : 'gemini-1.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
@@ -34,12 +38,22 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload),
     });
 
+    if (!response.ok) {
+      const err = await response.text();
+      res.status(response.status).json({ error: err });
+      return;
+    }
+
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    const text = data.candidates?.[0]?.content?.parts
+      ?.filter(p => p.text)
+      ?.map(p => p.text)
+      ?.join('') || '';
 
     res.status(200).json({
       content: [{ type: 'text', text }]
     });
+
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
