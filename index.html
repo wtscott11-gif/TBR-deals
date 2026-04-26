@@ -158,7 +158,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
 </div>
 <script>
-const PASS='lovecheapbooks';
+const PASS='showmethemoney';
 const stored=sessionStorage.getItem('tbr_auth');
 if(stored!==PASS){const entry=prompt('Enter password to use TBR Deals:');if(entry!==PASS){document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">Incorrect password.</p>';throw new Error('Unauthorized')}sessionStorage.setItem('tbr_auth',entry)}
 const API='/api/search';
