@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
     });
 
     var useSearch = tools.length > 0;
-    var model = 'gemini-2.0-flash-lite';
+    var model = 'gemini-2.0-flash';
     var payload = {
       contents: geminiMessages,
       generationConfig: { maxOutputTokens: max_tokens }
