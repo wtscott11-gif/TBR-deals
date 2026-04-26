@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + apiKey;
       var testResp = await fetch(testUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
     });
 
     var useSearch = tools.length > 0;
-    var model = useSearch ? 'gemini-2.0-flash' : 'gemini-1.5-flash';
+    var model = 'gemini-2.0-flash-lite';
     var payload = {
       contents: geminiMessages,
       generationConfig: { maxOutputTokens: max_tokens }
