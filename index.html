@@ -158,7 +158,18 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
 </div>
 <script>
-const API='https://api.anthropic.com/v1/messages';
+const PASS = 'yourchosenpassword';
+const stored = sessionStorage.getItem('tbr_auth');
+if (stored !== PASS) {
+  const entry = prompt('Enter password to use TBR Deals:');
+  if (entry !== PASS) {
+    document.body.innerHTML = '<p style="font-family:sans-serif;padding:2rem">Incorrect password.</p>';
+    throw new Error('Unauthorized');
+  }
+  sessionStorage.setItem('tbr_auth', entry);
+}
+const API = '/api/proxy';
+
 const MODEL='claude-sonnet-4-20250514';
 let books=[];try{books=JSON.parse(localStorage.getItem('tbr_books')||'[]')}catch(e){}
 let emailSaved='';try{emailSaved=localStorage.getItem('tbr_email')||''}catch(e){}
