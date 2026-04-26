@@ -9,7 +9,8 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + apiKey;
+      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
+
 
       var testResp = await fetch(testUrl, {
         method: 'POST',
