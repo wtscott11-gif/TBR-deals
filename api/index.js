@@ -8,6 +8,23 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ status: 'ok', gemini: keyCheck });
   }
 
+  // Quick test mode
+  if (req.url && req.url.includes('test')) {
+    try {
+      var testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + process.env.GEMINI_API_KEY;
+      var testResp = await fetch(testUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Return this exact JSON: [{"title":"Test Book","author":"Test Author","year":"2024"}]' }] }], generationConfig: { maxOutputTokens: 100 } })
+      });
+      var testRaw = await testResp.text();
+      return res.status(200).json({ testResponse: testRaw });
+    } catch(e) {
+      return res.status(200).json({ testError: e.message });
+    }
+  }
+
+
   try {
     let body = req.body;
     if (typeof body === 'string') { body = JSON.parse(body); }
