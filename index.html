@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#2C2C2A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="TBR Deals" />
+<meta name="description" content="Track your to-be-read list and get deal alerts when prices drop." />
+<title>TBR Deal Tracker</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%232C2C2A'/%3E%3Crect x='36' y='48' width='14' height='84' rx='4' fill='%23534AB7'/%3E%3Crect x='54' y='42' width='14' height='90' rx='4' fill='%230F6E56'/%3E%3Crect x='72' y='52' width='14' height='80' rx='4' fill='%23D85A30'/%3E%3Crect x='90' y='44' width='14' height='88' rx='4' fill='%23993556'/%3E%3Crect x='108' y='50' width='14' height='82' rx='4' fill='%23BA7517'/%3E%3Crect x='126' y='46' width='14' height='86' rx='4' fill='%23185FA5'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ff-display:'Playfair Display',Georgia,serif;--ff-body:'DM Sans',system-ui,sans-serif;--bg:#FAFAF8;--bg-card:#FFFFFF;--bg-surface:#F3F1EB;--text-primary:#1A1A18;--text-secondary:#5C5C58;--text-tertiary:#8F8F8A;--border:rgba(0,0,0,0.10);--border-strong:rgba(0,0,0,0.18);--ink:#2C2C2A;--ink-hover:#444441;--ink-text:#F1EFE8;--accent-green:#3B6D11;--accent-green-bg:#EAF3DE;--accent-green-border:#C0DD97;--accent-blue:#185FA5;--accent-purple-bg:#EEEDFE;--accent-purple-text:#3C3489;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root{--bg:#181816;--bg-card:#242422;--bg-surface:#2E2E2C;--text-primary:#F0EEE8;--text-secondary:#A8A8A2;--text-tertiary:#6E6E6A;--border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.16);--ink:#E8E6E0;--ink-hover:#F0EEE8;--ink-text:#1A1A18;--accent-green:#97C459;--accent-green-bg:#1A2E0A;--accent-green-border:#3B6D11;--accent-blue:#85B7EB;--accent-purple-bg:#26215C;--accent-purple-text:#AFA9EC}}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--ff-body);background:var(--bg);color:var(--text-primary);min-height:100dvh;padding-bottom:calc(var(--safe-bottom) + 1rem);-webkit-font-smoothing:antialiased}
+.app-header{background:var(--ink);color:var(--ink-text);padding:calc(var(--safe-top) + 1rem) 1.25rem 1rem;position:sticky;top:0;z-index:50}
+.app-header h1{font-family:var(--ff-display);font-size:22px;font-weight:400;font-style:italic;color:var(--ink-text);line-height:1.2}
+.app-header p{font-size:12px;color:rgba(241,239,232,0.6);margin-top:2px}
+.page{max-width:600px;margin:0 auto;padding:1rem 1rem 2rem}
+.card{background:var(--bg-card);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem}
+.section-label{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:.6rem}
+label.field-label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+input[type=text],input[type=number],input[type=email]{width:100%;height:44px;border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-primary);font-family:var(--ff-body);font-size:15px;padding:0 12px;outline:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
+input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(44,44,42,0.12)}
+@media(prefers-color-scheme:dark){input:focus{box-shadow:0 0 0 3px rgba(240,238,232,0.12)}}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+.prefix-input{display:flex;align-items:center;height:44px;border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.prefix-input:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(44,44,42,0.12)}
+.prefix-input .sym{padding:0 4px 0 12px;font-size:15px;color:var(--text-secondary);user-select:none;flex-shrink:0}
+.prefix-input input{border:none;box-shadow:none;background:transparent;height:100%;padding:0 12px 0 2px;flex:1}
+.prefix-input input:focus{box-shadow:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 18px;border-radius:var(--radius-sm);font-family:var(--ff-body);font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:var(--bg-card);color:var(--text-primary);transition:background .12s,transform .1s;-webkit-tap-highlight-color:transparent;white-space:nowrap;touch-action:manipulation}
+.btn:active{transform:scale(.97)}
+.btn-ink{background:var(--ink);color:var(--ink-text);border-color:var(--ink)}
+.btn-full{width:100%;height:52px;font-size:15px;border-radius:var(--radius-md)}
+.btn-sm{height:36px;font-size:13px;padding:0 14px}
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg-card);border:0.5px solid var(--border-strong);border-radius:var(--radius-md);z-index:200;overflow:hidden;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.ac-drop.open{display:block}
+.ac-item{padding:12px 14px;cursor:pointer;border-bottom:0.5px solid var(--border);-webkit-tap-highlight-color:transparent}
+.ac-item:last-child{border-bottom:none}
+.ac-item:active,.ac-item.sel{background:var(--bg-surface)}
+.ac-title{font-family:var(--ff-display);font-style:italic;font-size:14px;color:var(--text-primary)}
+.ac-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.ac-hint{padding:12px 14px;font-size:13px;color:var(--text-tertiary);font-style:italic}
+.char-counter{font-size:11px;color:var(--text-tertiary);margin-top:4px;height:16px}
+.char-counter.ready{color:var(--accent-green)}
+.chip-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem}
+.chip{padding:7px 12px;border-radius:30px;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:var(--bg-card);color:var(--text-secondary);transition:all .12s;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.chip.on{background:var(--ink);color:var(--ink-text);border-color:var(--ink)}
+.edition-panel{margin-top:.75rem;padding:.875rem;background:var(--bg-surface);border-radius:var(--radius-md);border:0.5px solid var(--border)}
+.edition-item{display:flex;align-items:flex-start;gap:10px;padding:8px;border-radius:var(--radius-sm);border:0.5px solid transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background .1s}
+.edition-item:active,.edition-item.picked{background:var(--bg-card);border-color:var(--border-strong)}
+.edition-cb{width:20px;height:20px;border-radius:5px;border:0.5px solid var(--border-strong);background:var(--bg-card);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .1s}
+.edition-cb.checked{background:var(--ink);border-color:var(--ink)}
+.edition-cb.checked::after{content:'';display:block;width:5px;height:10px;border:2px solid var(--ink-text);border-top:none;border-left:none;transform:rotate(40deg) translateY(-1px)}
+.edition-title{font-size:14px;font-weight:500;color:var(--text-primary)}
+.edition-meta{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.edition-note{font-size:12px;color:var(--text-tertiary);font-style:italic;margin-top:2px}
+.book-list{display:flex;flex-direction:column;gap:8px}
+.book-row{background:var(--bg-surface);border-radius:var(--radius-md);border:0.5px solid var(--border);overflow:hidden}
+.book-row-main{display:flex;align-items:center;gap:10px;padding:.875rem 1rem}
+.book-spine{width:5px;align-self:stretch;border-radius:3px;flex-shrink:0;min-height:40px}
+.book-info{flex:1;min-width:0}
+.book-title{font-family:var(--ff-display);font-size:15px;font-style:italic;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.book-author{font-size:12px;color:var(--text-secondary);margin-top:1px}
+.book-meta{font-size:11px;color:var(--text-tertiary);margin-top:3px;line-height:1.4}
+.book-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.book-threshold{font-size:12px;color:var(--text-tertiary);white-space:nowrap}
+.remove-btn{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-tertiary);padding:2px 0;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.edition-pills{padding:0 1rem .75rem 1.75rem;display:flex;flex-wrap:wrap;gap:4px}
+.pill{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--accent-purple-bg);color:var(--accent-purple-text)}
+.banner{border-radius:var(--radius-md);padding:.875rem 1rem;font-size:14px;margin-bottom:1rem;display:none;line-height:1.5}
+.deal-card{border-left:3px solid var(--accent-green);padding:.875rem 1rem;background:var(--bg-card);border-radius:0 var(--radius-md) var(--radius-md) 0;border-top:0.5px solid var(--border);border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border);margin-bottom:8px}
+.deal-book{font-family:var(--ff-display);font-style:italic;font-size:15px;color:var(--text-primary)}
+.deal-rows{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.deal-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.retailer-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--accent-green-bg);color:var(--accent-green)}
+.deal-format{font-size:12px;color:var(--text-secondary)}
+.deal-prices{display:flex;align-items:baseline;gap:6px;margin-left:auto}
+.deal-price{font-size:16px;font-weight:500;color:var(--accent-green)}
+.deal-orig{font-size:13px;color:var(--text-tertiary);text-decoration:line-through}
+.deal-link{display:inline-block;width:100%;text-align:center;margin-top:6px;padding:8px;border-radius:var(--radius-sm);background:var(--accent-green-bg);color:var(--accent-green);font-size:13px;font-weight:500;text-decoration:none;border:0.5px solid var(--accent-green-border)}
+.deal-section-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin:10px 0 6px}
+.filter-bar{display:flex;gap:8px;margin-bottom:.875rem;align-items:center;flex-wrap:wrap}
+.filter-select{height:36px;border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-primary);font-family:var(--ff-body);font-size:13px;padding:0 10px;outline:none;-webkit-appearance:none;flex:1;min-width:120px}
+.loading-dots span{animation:blink 1.2s infinite;opacity:0}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{50%{opacity:1}}
+.empty{font-size:14px;color:var(--text-tertiary);text-align:center;padding:1.5rem 0}
+.s0{background:#534AB7}.s1{background:#0F6E56}.s2{background:#D85A30}.s3{background:#993556}.s4{background:#BA7517}.s5{background:#185FA5}
+</style>
+</head>
+<body>
+<header class="app-header">
+  <h1>My TBR</h1>
+  <p>Track books &amp; get deal alerts when prices drop</p>
+</header>
+<div class="page">
+  <div class="banner" id="banner"></div>
+  <div class="card">
+    <div class="section-label">Add a book</div>
+    <div class="ac-wrap">
+      <label class="field-label">Title or author <span style="color:var(--text-tertiary);font-weight:400">(min. 8 characters to search)</span></label>
+      <input type="text" id="book-input" placeholder="e.g. The Hobbit" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <div class="char-counter" id="char-counter">Type at least 8 characters to trigger search</div>
+      <div class="ac-drop" id="ac-drop"></div>
+    </div>
+    <div style="margin-top:.875rem">
+      <div class="section-label" style="margin-bottom:.4rem">Formats I want</div>
+      <div class="chip-grid">
+        <span class="chip" data-fmt="Hardcover">Hardcover</span>
+        <span class="chip" data-fmt="Trade paperback">Trade paperback</span>
+        <span class="chip" data-fmt="Mass market paperback">Mass market pb</span>
+        <span class="chip" data-fmt="Ebook">Ebook</span>
+        <span class="chip" data-fmt="Audiobook">Audiobook</span>
+        <span class="chip" data-fmt="Large print">Large print</span>
+        <span class="chip" data-fmt="Signed edition">Signed</span>
+        <span class="chip" data-fmt="Illustrated edition">Illustrated</span>
+      </div>
+    </div>
+    <div id="edition-panel" style="display:none">
+      <div class="edition-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <div class="section-label" style="margin-bottom:0">Specific editions / printings</div>
+          <button class="btn btn-sm" id="load-editions-btn" onclick="triggerLoadEditions()">Load editions</button>
+        </div>
+        <div id="edition-content"><p class="ac-hint">Tap "Load editions" to see available printings.</p></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-top:.875rem">
+      <div style="flex:0 0 auto">
+        <label class="field-label">Alert under (USD)</label>
+        <div class="prefix-input" style="width:100px">
+          <span class="sym">$</span>
+          <input type="number" id="threshold-input" min="0.99" step="0.01" value="10" inputmode="decimal" />
+        </div>
+      </div>
+      <button class="btn btn-ink" style="flex:1;height:44px" onclick="addBook()">+ Add to TBR</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-label">My TBR list</div>
+    <div id="book-list"><p class="empty">No books yet — add your first pick above.</p></div>
+  </div>
+  <div class="card">
+    <div class="section-label">Email notifications</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:.75rem">Get an email when a deal hits your threshold</p>
+    <div style="display:flex;gap:8px">
+      <input type="email" id="email-input" placeholder="your@email.com" style="flex:1" inputmode="email" />
+      <button class="btn btn-ink" onclick="saveEmail()" style="flex-shrink:0">Save</button>
+    </div>
+    <p id="email-ok" style="font-size:13px;color:var(--accent-green);margin-top:8px;display:none">&#10003; Email saved.</p>
+  </div>
+  <button class="btn btn-ink btn-full" id="check-btn" onclick="checkDeals()">Search for deals across all retailers</button>
+  <div id="deals-section" style="display:none;margin-top:1.25rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <div class="section-label" style="margin-bottom:0">Deal results</div>
+    </div>
+    <div class="filter-bar">
+      <select class="filter-select" id="filter-book" onchange="applyFilters()">
+        <option value="">All books</option>
+      </select>
+      <select class="filter-select" id="filter-format" onchange="applyFilters()">
+        <option value="">All formats</option>
+      </select>
+      <select class="filter-select" id="sort-order" onchange="applyFilters()">
+        <option value="threshold">Within threshold first</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="book">By book</option>
+        <option value="retailer">By retailer</option>
+      </select>
+    </div>
+    <div id="deals-list"></div>
+  </div>
+</div>
+<script>
+const PASS='yourchosenpassword';
+const stored=sessionStorage.getItem('tbr_auth');
+if(stored!==PASS){const entry=prompt('Enter password to use TBR Deals:');if(entry!==PASS){document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">Incorrect password.</p>';throw new Error('Unauthorized')}sessionStorage.setItem('tbr_auth',entry)}
+const API='/api/search';
+const MIN_CHARS=8;
+const DEBOUNCE_MS=1000;
+const AC_CACHE={};
+let books=[];try{books=JSON.parse(localStorage.getItem('tbr_books')||'[]')}catch(e){}
+let emailSaved='';try{emailSaved=localStorage.getItem('tbr_email')||''}catch(e){}
+let selBook=null,selFormats=new Set(),selEditions=new Set();
+let acResults=[],acIdx=-1,acTimer=null,acAbort=null,edAbort=null;
+let allDeals=[];
+let pendingEditionBook=null;
+const inp=document.getElementById('book-input');
+const drop=document.getElementById('ac-drop');
+const counter=document.getElementById('char-counter');
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.querySelectorAll('.chip').forEach(c=>{c.addEventListener('click',()=>{const f=c.dataset.fmt;if(selFormats.has(f)){selFormats.delete(f);c.classList.remove('on')}else{selFormats.add(f);c.classList.add('on')}})});
+inp.addEventListener('input',()=>{
+  selBook=null;
+  const q=inp.value.trim();
+  const remaining=Math.max(0,MIN_CHARS-q.length);
+  if(remaining>0){
+    counter.textContent=`${remaining} more character${remaining===1?'':'s'} needed to search`;
+    counter.classList.remove('ready');
+    closeDrop();
+    clearTimeout(acTimer);
+    return;
+  }
+  counter.textContent='Searching...';
+  counter.classList.add('ready');
+  clearTimeout(acTimer);
+  if(AC_CACHE[q]){acResults=AC_CACHE[q];acIdx=-1;renderDrop();counter.textContent='';return}
+  acTimer=setTimeout(()=>fetchAC(q),DEBOUNCE_MS);
+});
+inp.addEventListener('keydown',e=>{if(!drop.classList.contains('open'))return;if(e.key==='ArrowDown'){e.preventDefault();moveAC(1)}else if(e.key==='ArrowUp'){e.preventDefault();moveAC(-1)}else if(e.key==='Enter'){e.preventDefault();acIdx>=0?selectAC(acIdx):addBook()}else if(e.key==='Escape'){closeDrop()}});
+document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))closeDrop()});
+function moveAC(d){acIdx=Math.max(-1,Math.min(acResults.length-1,acIdx+d));renderDrop()}
+async function fetchAC(q){
+  if(acAbort)acAbort.abort();acAbort=new AbortController();
+  drop.innerHTML='<p class="ac-hint">Searching...</p>';drop.classList.add('open');
+  try{
+    const r=await fetch(API,{method:'POST',signal:acAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:`Return a JSON array of up to 6 real published books matching "${q}". Each object must have title, author, year fields. Return ONLY a valid JSON array, no markdown, no explanation, no backticks.`}],max_tokens:200})});
+    const d=await r.json();
+    const txt=(d.content||[]).map(c=>c.type==='text'?c.text:'').join('').trim();
+    let parsed=[];
+    try{parsed=JSON.parse(txt.replace(/```json|```/g,'').trim())}catch(parseErr){drop.innerHTML='<p class="ac-hint">'+esc(txt.substring(0,120))+'</p>';drop.classList.add('open');counter.textContent='';return}
+    AC_CACHE[q]=Array.isArray(parsed)?parsed:[];
+    acResults=AC_CACHE[q];
+    acIdx=-1;counter.textContent='';renderDrop();
+  }catch(e){if(e.name!=='AbortError'){drop.innerHTML='<p class="ac-hint">Error: '+esc(e.message)+'</p>';drop.classList.add('open');counter.textContent=''}}
+}
+function renderDrop(){
+  if(!acResults.length){drop.innerHTML='<p class="ac-hint">No results found</p>';drop.classList.add('open');return}
+  drop.innerHTML=acResults.map((b,i)=>`<div class="ac-item${i===acIdx?' sel':''}" onmousedown="selectAC(${i})" ontouchend="selectAC(${i})"><div class="ac-title">${esc(b.title||'')}</div><div class="ac-sub">${esc(b.author||'')}${b.year?' · '+b.year:''}</div></div>`).join('');
+  drop.classList.add('open');
+}
+function selectAC(i){
+  const b=acResults[i];if(!b)return;
+  selBook=b;inp.value=b.title+' by '+b.author;
+  counter.textContent='';counter.classList.remove('ready');
+  closeDrop();
+  pendingEditionBook=b;
+  document.getElementById('edition-panel').style.display='block';
+  document.getElementById('edition-content').innerHTML='<p class="ac-hint">Tap "Load editions" to see available printings.</p>';
+  document.getElementById('load-editions-btn').style.display='inline-flex';
+  selEditions=new Set();
+}
+function triggerLoadEditions(){
+  if(!pendingEditionBook)return;
+  const btn=document.getElementById('load-editions-btn');
+  btn.disabled=true;btn.textContent='Loading...';
+  fetchEditions(pendingEditionBook);
+}
+function closeDrop(){drop.classList.remove('open');drop.innerHTML='';acResults=[];acIdx=-1}
+function clearEditions(){
+  selEditions=new Set();pendingEditionBook=null;
+  document.getElementById('edition-panel').style.display='none';
+  document.getElementById('edition-content').innerHTML='<p class="ac-hint">Tap "Load editions" to see available printings.</p>';
+  const btn=document.getElementById('load-editions-btn');
+  if(btn){btn.disabled=false;btn.textContent='Load editions';btn.style.display='inline-flex';}
+}
+async function fetchEditions(book){
+  const content=document.getElementById('edition-content');
+  const btn=document.getElementById('load-editions-btn');
+  content.innerHTML='<p class="ac-hint">Looking up editions...</p>';
+  selEditions=new Set();
+  if(edAbort)edAbort.abort();edAbort=new AbortController();
+  try{
+    const r=await fetch(API,{method:'POST',signal:edAbort.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:`List known editions and printings of "${book.title}" by ${book.author}. Include different cover art versions, special editions, anniversary editions, publisher changes, illustrated editions. Return a JSON array of up to 10 objects with fields: id (short slug), label, year, publisher, note (what makes it distinct, max 12 words). Return ONLY valid JSON array, no markdown, no backticks.`}],max_tokens:400})});
+    const d=await r.json();
+    const txt=(d.content||[]).map(c=>c.type==='text'?c.text:'').join('').trim();
+    let editions=[];
+    try{editions=JSON.parse(txt.replace(/```json|```/g,'').trim())}catch(e){content.innerHTML='<p class="ac-hint">Could not load editions — you can still add the book.</p>';btn.style.display='none';return}
+    renderEditions(editions);
+    btn.style.display='none';
+  }catch(e){
+    if(e.name!=='AbortError'){content.innerHTML='<p class="ac-hint">Could not load editions — you can still add the book.</p>';btn.disabled=false;btn.textContent='Try again';}
+  }
+}
+function renderEditions(list){
+  const content=document.getElementById('edition-content');
+  if(!list.length){content.innerHTML='<p class="ac-hint">No distinct editions found.</p>';return}
+  content.innerHTML=list.map(e=>`<div class="edition-item" id="ei-${esc(e.id)}" onclick="toggleEd('${esc(e.id)}')"><div class="edition-cb" id="cb-${esc(e.id)}"></div><div style="flex:1;min-width:0"><div class="edition-title">${esc(e.label)}${e.year?' ('+e.year+')':''}</div>${e.publisher?`<div class="edition-meta">${esc(e.publisher)}</div>`:''} ${e.note?`<div class="edition-note">${esc(e.note)}</div>`:''}</div></div>`).join('');
+}
+function toggleEd(id){const item=document.getElementById('ei-'+id);const cb=document.getElementById('cb-'+id);if(selEditions.has(id)){selEditions.delete(id);item.classList.remove('picked');cb.classList.remove('checked')}else{selEditions.add(id);item.classList.add('picked');cb.classList.add('checked')}}
+function addBook(){
+  const raw=inp.value.trim();const thresh=parseFloat(document.getElementById('threshold-input').value)||10;
+  if(!raw){inp.focus();return}
+  let title=raw,author='';
+  if(selBook){title=selBook.title;author=selBook.author}else{const m=raw.match(/^(.+?)\s+by\s+(.+)$/i);if(m){title=m[1].trim();author=m[2].trim()}}
+  const editions=[];selEditions.forEach(id=>{const el=document.getElementById('ei-'+id);if(el){const t=el.querySelector('.edition-title');editions.push(t?t.textContent.trim():id)}});
+  books.push({title,author,threshold:thresh,formats:[...selFormats],editions});
+  try{localStorage.setItem('tbr_books',JSON.stringify(books))}catch(e){}
+  inp.value='';selBook=null;selFormats=new Set();
+  counter.textContent='Type at least 8 characters to trigger search';
+  counter.classList.remove('ready');
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  clearEditions();renderBooks();showBanner('Added to your TBR!','success');
+}
+function renderBooks(){
+  const el=document.getElementById('book-list');
+  if(!books.length){el.innerHTML='<p class="empty">No books yet — add your first pick above.</p>';return}
+  el.innerHTML=books.map((b,i)=>`<div class="book-row"><div class="book-row-main"><div class="book-spine s${i%6}"></div><div class="book-info"><div class="book-title">${esc(b.title)}</div><div class="book-author">${esc(b.author||'')}</div><div class="book-meta">${b.formats&&b.formats.length?b.formats.join(' · '):'Any format'}${b.editions&&b.editions.length?' · '+b.editions.length+' edition'+(b.editions.length>1?'s':'')+' pinned':''}</div></div><div class="book-right"><div class="book-threshold">&lt; $${Number(b.threshold).toFixed(2)}</div><button class="remove-btn" onclick="removeBook(${i})" aria-label="Remove">&#x2715;</button></div></div>${b.editions&&b.editions.length?`<div class="edition-pills">${b.editions.map(e=>`<span class="pill">${esc(e)}</span>`).join('')}</div>`:''}</div>`).join('');
+}
+function removeBook(i){books.splice(i,1);try{localStorage.setItem('tbr_books',JSON.stringify(books))}catch(e){}renderBooks()}
+function saveEmail(){const e=document.getElementById('email-input').value.trim();if(!e||!e.includes('@'))return;emailSaved=e;try{localStorage.setItem('tbr_email',e)}catch(e){}document.getElementById('email-ok').style.display='block'}
+function extractJSON(txt){
+  try{return JSON.parse(txt.trim())}catch(e){}
+  const clean=txt.replace(/```json|```/g,'').trim();
+  try{return JSON.parse(clean)}catch(e){}
+  const match=txt.match(/\[[\s\S]*\]/);
+  if(match){try{return JSON.parse(match[0])}catch(e){}}
+  return null;
+}
+async function checkDeals(){
+  if(!books.length){showBanner('Add at least one book first.','warn');return}
+  const btn=document.getElementById('check-btn');btn.disabled=true;
+  btn.innerHTML='Searching <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>';
+  document.getElementById('deals-section').style.display='none';
+  const bookList=books.map(b=>{let s=`"${b.title}"${b.author?' by '+b.author:''} (threshold: $${Number(b.threshold).toFixed(2)}`;if(b.formats&&b.formats.length)s+=`, formats: ${b.formats.join(', ')}`;if(b.editions&&b.editions.length)s+=`, preferred editions: ${b.editions.join(', ')}`;return s+')'}).join('\n');
+  const prompt=`You are a book deal assistant. Search the web for current prices of these books at Amazon, Barnes & Noble, Books-A-Million, Target, and Walmart. Return a JSON array where each object has exactly these fields: bookTitle (string), edition (string or null), format (string), retailer (string), currentPrice (number), originalPrice (number or null), purchaseUrl (string), belowThreshold (boolean). Only include results where you found a real price. Return ONLY a valid JSON array starting with [ and ending with ]. No markdown, no backticks, no explanation.\n\nBooks:\n${bookList}`;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:1200,tools:[{type:'web_search'}]})});
+    const data=await r.json();
+    const txt=(data.content||[]).map(c=>c.type==='text'?c.text:'').join('').trim();
+    const deals=extractJSON(txt);
+    if(!deals||!Array.isArray(deals)){
+      document.getElementById('deals-list').innerHTML='<p class="empty" style="text-align:left;font-size:12px">'+esc(txt.substring(0,300))+'</p>';
+      document.getElementById('deals-section').style.display='block';
+      resetBtn();return;
+    }
+    allDeals=deals;
+    populateFilters(deals);
+    applyFilters();
+    if(emailSaved&&deals.some(d=>d.belowThreshold)){showBanner(`Deals found! In a live deployment a summary would email to ${emailSaved}.`,'success')}
+    else if(deals.length){showBanner('Search complete — results below.','success')}
+    else{showBanner('No deals found right now.','info')}
+  }catch(e){showBanner('Search failed: '+e.message,'warn')}
+  resetBtn();
+}
+function populateFilters(deals){
+  const bookSel=document.getElementById('filter-book');
+  const fmtSel=document.getElementById('filter-format');
+  const bookTitles=[...new Set(deals.map(d=>d.bookTitle))];
+  const formats=[...new Set(deals.map(d=>d.format).filter(Boolean))];
+  bookSel.innerHTML='<option value="">All books</option>'+bookTitles.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  fmtSel.innerHTML='<option value="">All formats</option>'+formats.map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('');
+}
+function applyFilters(){
+  const bookFilter=document.getElementById('filter-book').value;
+  const fmtFilter=document.getElementById('filter-format').value;
+  const sortOrder=document.getElementById('sort-order').value;
+  let filtered=allDeals.filter(d=>{
+    if(bookFilter&&d.bookTitle!==bookFilter)return false;
+    if(fmtFilter&&d.format!==fmtFilter)return false;
+    return true;
+  });
+  filtered.sort((a,b)=>{
+    if(sortOrder==='price-asc')return Number(a.currentPrice)-Number(b.currentPrice);
+    if(sortOrder==='price-desc')return Number(b.currentPrice)-Number(a.currentPrice);
+    if(sortOrder==='book')return(a.bookTitle||'').localeCompare(b.bookTitle||'');
+    if(sortOrder==='retailer')return(a.retailer||'').localeCompare(b.retailer||'');
+    if(a.belowThreshold&&!b.belowThreshold)return -1;
+    if(!a.belowThreshold&&b.belowThreshold)return 1;
+    return Number(a.currentPrice)-Number(b.currentPrice);
+  });
+  renderDeals(filtered);
+  document.getElementById('deals-section').style.display='block';
+}
+function renderDeals(deals){
+  const list=document.getElementById('deals-list');
+  if(!deals.length){list.innerHTML='<p class="empty">No results match your filters.</p>';return}
+  const byBook={};deals.forEach(d=>{if(!byBook[d.bookTitle])byBook[d.bookTitle]=[];byBook[d.bookTitle].push(d)});
+  let html='';
+  Object.entries(byBook).forEach(([title,rows])=>{
+    const bookEntry=books.find(b=>b.title.toLowerCase()===title.toLowerCase());
+    const threshold=bookEntry?bookEntry.threshold:999;
+    const within=rows.filter(r=>Number(r.currentPrice)<=threshold);
+    const over=rows.filter(r=>Number(r.currentPrice)>threshold);
+    html+=`<div class="deal-card"><div class="deal-book">${esc(title)}</div>`;
+    if(within.length){
+      html+=`<div class="deal-section-label" style="color:var(--accent-green)">&#10003; Within your threshold</div>
+      <div class="deal-rows">${within.map(r=>`
+        <div class="deal-row">
+          <span class="retailer-tag">${esc(r.retailer)}</span>
+          ${r.format?`<span class="deal-format">${esc(r.format)}${r.edition?' · '+esc(r.edition):''}</span>`:''}
+          <div class="deal-prices" style="margin-left:auto">
+            ${r.originalPrice?`<span class="deal-orig">$${Number(r.originalPrice).toFixed(2)}</span>`:''}
+            <span class="deal-price">$${Number(r.currentPrice).toFixed(2)}</span>
+          </div>
+        </div>
+        ${r.purchaseUrl?`<a class="deal-link" href="${esc(r.purchaseUrl)}" target="_blank" rel="noopener">Buy at ${esc(r.retailer)} &rarr;</a>`:''}`).join('')}
+      </div>`;
+    }
+    if(over.length){
+      html+=`<div class="deal-section-label" style="color:var(--text-tertiary);padding-top:10px;border-top:0.5px solid var(--border);margin-top:12px">Above your threshold</div>
+      <div class="deal-rows">${over.map(r=>`
+        <div class="deal-row" style="opacity:0.6">
+          <span class="retailer-tag" style="background:var(--bg-surface);color:var(--text-tertiary)">${esc(r.retailer)}</span>
+          ${r.format?`<span class="deal-format">${esc(r.format)}${r.edition?' · '+esc(r.edition):''}</span>`:''}
+          <div class="deal-prices" style="margin-left:auto">
+            ${r.originalPrice?`<span class="deal-orig">$${Number(r.originalPrice).toFixed(2)}</span>`:''}
+            <span style="font-size:16px;font-weight:500;color:var(--text-secondary)">$${Number(r.currentPrice).toFixed(2)}</span>
+          </div>
+        </div>
+        ${r.purchaseUrl?`<a class="deal-link" href="${esc(r.purchaseUrl)}" target="_blank" rel="noopener" style="opacity:0.6">Buy at ${esc(r.retailer)} &rarr;</a>`:''}`).join('')}
+      </div>`;
+    }
+    html+=`</div>`;
+  });
+  list.innerHTML=html;
+}
+function showBanner(msg,type='success'){const b=document.getElementById('banner');b.textContent=msg;b.style.display='block';b.style.background=type==='warn'?'#FAEEDA':type==='info'?'#E6F1FB':'#EAF3DE';b.style.border=`0.5px solid ${type==='warn'?'#FAC775':type==='info'?'#B5D4F4':'#C0DD97'}`;b.style.color=type==='warn'?'#854F0B':type==='info'?'#185FA5':'#3B6D11';setTimeout(()=>{b.style.display='none'},7000)}
+function resetBtn(){const btn=document.getElementById('check-btn');btn.disabled=false;btn.textContent='Search for deals across all retailers'}
+try{if(emailSaved)document.getElementById('email-input').value=emailSaved}catch(e){}
+renderBooks();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
